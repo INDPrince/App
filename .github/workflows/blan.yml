@@ -1,0 +1,42 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Extract ZIP file
+      run: |
+        find . -name "*.zip" -type f
+        unzip -q "Reef-Complete.zip" -d ./
+        ls -la
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./Reef-Complete/Reef/Reef/gradlew
+      
+    - name: Build APK
+      run: |
+        cd Reef-Complete/Reef/Reef
+        ./gradlew assembleDebug --stacktrace
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: Reef-Complete/Reef/Reef/app/build/outputs/apk/debug/app-debug.apk
